@@ -100,7 +100,7 @@ def render_markdown(
     L: list[str] = []
     A = L.append
 
-    # 标题用真实模型名：env["model"] 是 --served-model-name 别名（如 dsv4），
+    # 标题用真实模型名：env["model"] 往往是 --served-model-name 的简短别名，
     # 作为交付物标题看不出测的是什么模型。真名由 deployment.model_name 声明。
     _dep0 = env.get("deployment") or {}
     _title_model = _dep0.get("model_name") or env.get("model", "-")

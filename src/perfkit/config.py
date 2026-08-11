@@ -118,7 +118,7 @@ class ScenarioSpec:
     stream: bool = True
     slo: dict[str, Any] | None = None
 
-    # 旧字段名 -> 新字段名。保留是为了不破坏 conf.qwen.json 这类既有配置
+    # 旧字段名 -> 新字段名。保留是为了不破坏改名之前写的既有配置
     LEGACY_KEYS: ClassVar[dict[str, str]] = {
         "concurrency": "parallelism",
         "requests_per_concurrency": "request_multiplier",
