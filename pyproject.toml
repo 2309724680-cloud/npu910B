@@ -1,0 +1,61 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "llm-perfkit"
+version = "0.1.0"
+description = "Benchmark toolkit for OpenAI-compatible LLM inference servers: TTFT, TPOT, ITL, TPS, Goodput"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "perfkit contributors" }]
+keywords = [
+    "llm", "benchmark", "inference", "vllm", "sglang",
+    "ttft", "goodput", "latency", "throughput", "performance-testing",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: System :: Benchmark",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+charts = ["matplotlib>=3.7"]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
+
+[project.urls]
+Homepage = "https://github.com/2309724680-cloud/npu910B"
+Documentation = "https://github.com/2309724680-cloud/npu910B/tree/main/docs"
+Issues = "https://github.com/2309724680-cloud/npu910B/issues"
+
+[project.scripts]
+perfkit = "perfkit.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/perfkit"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

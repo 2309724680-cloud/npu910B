@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Benchmark output — never commit real measurements.
+# Runs against a production endpoint capture model names, endpoints and
+# hardware detail; keep them out of the repo entirely.
+results/
+*_requests.jsonl
+*_report.md
+*_curves.csv
+*_summary.json
+charts/
+*.png
+*.xlsx
+
+# Local configs hold real base_url / api_key. Only examples/ is tracked.
+conf.*.json
+!examples/conf.*.json
+.env
+
+# Deployment environment — service definitions, launch scripts and host
+# inventories belong to the private infra repo, not here.
+deploy*/
+*compose*.y*ml
+serve*.sh
+*.pdf
+
+# Editors / OS
+.vscode/
+.idea/
+.claude/
+.DS_Store
+Thumbs.db
