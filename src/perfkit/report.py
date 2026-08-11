@@ -682,15 +682,18 @@ def render_markdown(
         A("")
     A("### 9.2 采集项定义")
     A("")
-    A("| 类别 | NVIDIA（`nvidia-smi` / DCGM） | Ascend（`npu-smi info`） | 本轮值 |")
+    A("下表 Ascend 列为本轮实际采集口径，NVIDIA 列仅为换算对照，便于跨平台读者"
+      "定位同类指标，**不代表本轮在该平台上有实测数据**。")
+    A("")
+    A("| 类别 | Ascend（`npu-smi info`，本轮口径） | NVIDIA 对照（`nvidia-smi` / DCGM） | 本轮值 |")
     A("|---|---|---|---|")
-    A(f"| 计算利用率 | `utilization.gpu` | AICore Usage | {_tbd(hw, 'util')} |")
-    A(f"| 显存 / HBM 占用 | `memory.used` / `memory.total` | HBM-Usage | "
+    A(f"| 计算利用率 | AICore Usage | `utilization.gpu` | {_tbd(hw, 'util')} |")
+    A(f"| 显存 / HBM 占用 | HBM-Usage | `memory.used` / `memory.total` | "
       f"{_tbd(hw, 'memory')} |")
-    A(f"| 功耗 | `power.draw` | Power | {_tbd(hw, 'power')} |")
-    A(f"| 温度 | `temperature.gpu` | Temp | {_tbd(hw, 'temp')} |")
-    A(f"| 频率 | `clocks.sm` | AICore Freq | {_tbd(hw, 'clock')} |")
-    A(f"| 通信状态 | NVLink / PCIe 带宽 | **HCCL 链路状态与带宽** | "
+    A(f"| 功耗 | Power | `power.draw` | {_tbd(hw, 'power')} |")
+    A(f"| 温度 | Temp | `temperature.gpu` | {_tbd(hw, 'temp')} |")
+    A(f"| 频率 | AICore Freq | `clocks.sm` | {_tbd(hw, 'clock')} |")
+    A(f"| 通信状态 | **HCCL 链路状态与带宽** | NVLink / PCIe 带宽 | "
       f"{_tbd(hw, 'interconnect')} |")
     A("")
     A("### 9.3 多卡部署的强制采集要求")
@@ -708,7 +711,7 @@ def render_markdown(
       "只有配合温度曲线才能识别，否则会误判为内存泄漏或负载不均。")
     A("- **计算利用率**：区分 §5.3 过载区是「算力饱和」还是「调度饱和」的唯一依据。")
     A("")
-    A("采集方式建议：压测期间以固定间隔轮询 `nvidia-smi` / `npu-smi info`，"
+    A("采集方式建议：压测期间以固定间隔轮询 `npu-smi info`（或对应平台的厂商工具），"
       "按时间戳与请求记录对齐，输出与延迟曲线同轴的资源曲线。"
       "**采样间隔不应大于 5s**，否则会漏掉 prefill 阶段的瞬时峰值。")
     A("")

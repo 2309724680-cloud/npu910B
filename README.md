@@ -7,7 +7,11 @@ llama.cpp server, or a hosted API — and get TTFT, TPOT, ITL, throughput and
 **Goodput** under controlled load, plus Markdown / CSV / JSON reports you can
 hand to someone else. Switching targets is a config change, nothing more.
 
-Validated against both NVIDIA GPU and Ascend NPU deployments.
+Vendor-neutral by construction — it speaks HTTP to an OpenAI-compatible
+endpoint and nothing else, so no tokenizer, accelerator SDK or vendor runtime is
+needed on the benchmark host. Measured end to end against a production
+**DeepSeek-V4-Flash (W8A8 + MTP)** deployment on **Ascend 910B × 8** under
+vLLM-Ascend; see [Validated deployment](#validated-deployment).
 
 **English** · [中文](README.zh-CN.md)
 
@@ -191,6 +195,39 @@ Two traps worth knowing before you quote a number:
 
 Both are called out in the generated report as well, so a reader who didn't run
 the benchmark still sees them.
+
+## Validated deployment
+
+The toolkit itself is hardware-agnostic — it only issues HTTP requests. The
+deployment it has been exercised against end to end is a single-node Ascend
+serving stack:
+
+| | |
+|---|---|
+| Model | DeepSeek-V4-Flash, W8A8 quantised (`W8A8_DYNAMIC`, ascend modelslim) |
+| Architecture | MoE, 43 layers, hidden 4096; 256 routed + 1 shared expert, top-6 per token; MLA (64 attention heads / 1 KV head); vocab 129,280 |
+| Speculative decoding | MTP, `num_speculative_tokens=1` |
+| Accelerator | Ascend 910B4-1 × 8, 64 GB HBM per card, single node |
+| OS / stack | openEuler 22.03 LTS SP3 aarch64, Ascend HDK 25.5.1, CANN 9.0.1 |
+| Serving | vLLM-Ascend v0.23.0rc1 (vllm 0.23.0, torch 2.10.0, torch_npu 2.10.0.post2, Python 3.12.13) |
+| Parallelism | TP=8 + expert parallel |
+| Key server flags | `--max-model-len 133120`, `--max-num-batched-tokens 8192`, `--max-num-seqs 32`, `--gpu-memory-utilization 0.9`, `--async-scheduling`, `cudagraph_mode: FULL_DECODE_ONLY`, prefix caching off |
+| KV pool | 363,172 tokens |
+
+Coverage exercised on that deployment: a concurrency ladder of
+1 / 2 / 4 / 8 / 12 / 16 / 20 / 24 / 28 / 32 at 1K input / 128 output, a
+sequence-length sweep at 8K / 32K / 64K input, and a max-context run at 131,072
+input tokens — closed-loop, `ignore_eos=true`, unique per-request prompts,
+with server-side `/metrics` scraped throughout.
+
+Two things worth stating plainly, because they bound what these results prove:
+
+- **Prefix caching was off**, so the TTFT figures are cold-cache upper bounds. A
+  deployment with a reusable system prompt will do better.
+- **No NVIDIA deployment has been measured.** Nothing in the client is
+  CUDA-specific and the report template carries an `nvidia-smi` ↔ `npu-smi`
+  column mapping for readers who collect on that side, but that is a mapping
+  offered for convenience, not a validated result.
 
 ## Development
 

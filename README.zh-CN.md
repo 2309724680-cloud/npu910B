@@ -7,7 +7,10 @@ API 都算——就能测 **TTFT、TPOT、ITL、吞吐与 Goodput**，支持闭�
 模型，可按并行度与序列长度扫描矩阵，采集服务端 vLLM `/metrics`，输出
 Markdown + CSV + JSON 报告。换被测对象只改配置。
 
-已在 NVIDIA GPU 与昇腾 NPU 上的 vLLM 实测验证。
+设计上与厂商无关——只对 OpenAI 兼容接口发 HTTP 请求，压测机上不需要 tokenizer、
+加速卡 SDK 或任何厂商运行时。已在 **Ascend 910B × 8** 的
+**DeepSeek-V4-Flash（W8A8 + MTP）** 生产部署上完成端到端实测，
+详见[实测部署环境](#实测部署环境)。
 
 [English](README.md) · **中文**
 
@@ -197,6 +200,35 @@ TTFT 改变一个数量级，留给默认值会让结果不可比。
 
 必须流式：`stream: false` 会在校验阶段直接报错而不是静默降级——没有逐 chunk
 计时，TTFT / ITL / TPOT 无定义。
+
+## 实测部署环境
+
+工具本身与硬件无关，只发 HTTP 请求。完成端到端实测的被测部署为单机昇腾环境：
+
+| | |
+|---|---|
+| 模型 | DeepSeek-V4-Flash，W8A8 量化（ascend modelslim，`W8A8_DYNAMIC`） |
+| 架构 | MoE，43 层，hidden 4096；routed experts 256 + shared 1，每 token 激活 top-6；MLA（64 attn heads / 1 kv head）；vocab 129,280 |
+| 推测解码 | MTP，`num_speculative_tokens=1` |
+| 加速卡 | Ascend 910B4-1 × 8，64 GB HBM/卡，单机 |
+| 系统 / 底座 | openEuler 22.03 LTS SP3 aarch64，Ascend HDK 25.5.1，CANN 9.0.1 |
+| 推理框架 | vLLM-Ascend v0.23.0rc1（vllm 0.23.0 / torch 2.10.0 / torch_npu 2.10.0.post2 / Python 3.12.13） |
+| 并行策略 | TP=8 + 专家并行（EP） |
+| 关键启动参数 | `--max-model-len 133120`、`--max-num-batched-tokens 8192`、`--max-num-seqs 32`、`--gpu-memory-utilization 0.9`、`--async-scheduling`、`cudagraph_mode: FULL_DECODE_ONLY`，关闭 prefix caching |
+| KV 池 | 363,172 token |
+
+已在该部署上跑通的覆盖面：并行度阶梯 1 / 2 / 4 / 8 / 12 / 16 / 20 / 24 / 28 / 32
+（输入 1K、输出 128）、长度扫描（输入 8K / 32K / 64K）、以及最大上下文验证
+（输入 131,072 token）。全部为闭环模式、`ignore_eos=true`、逐请求独立随机
+prompt，并全程采集服务端 `/metrics`。
+
+两点必须说明，因为它们界定了这些结果能证明什么：
+
+- **prefix caching 是关闭的**，所以 TTFT 是冷 cache 上限。生产若有可复用系统
+  提示词，实际会更优。
+- **未在 NVIDIA 部署上实测。** 客户端没有任何 CUDA 相关实现，报告模板里带了一张
+  `nvidia-smi` ↔ `npu-smi` 采集项对照表方便那一侧的读者，但那是换算参照，
+  不是实测结论。
 
 ## 开发
 

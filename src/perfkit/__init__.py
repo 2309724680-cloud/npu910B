@@ -2,7 +2,10 @@
 
 Works against anything exposing `/v1/chat/completions`: vLLM, SGLang, TGI,
 llama.cpp server, or a hosted API. Switching targets is a config change only.
-Validated on both NVIDIA GPUs and Ascend NPUs.
+Vendor-neutral by construction: the client only speaks HTTP, so no tokenizer or
+accelerator SDK is required. Measured end to end against DeepSeek-V4-Flash
+(W8A8 + MTP) on Ascend 910B x8 under vLLM-Ascend; see README for the full
+deployment snapshot.
 
 Measures TTFT, TPOT, ITL, throughput and Goodput under closed-loop or
 open-loop (Poisson) load, sweeps concurrency and sequence lengths, scrapes
